@@ -1,7 +1,7 @@
 'use strict';
 
 var _ = require('lodash');
-var fs = require('fs');
+var fs = require('graceful-fs');
 var twemoji = require('twemoji');
 var StringBuilder = require('stringbuilder')
 
@@ -107,7 +107,9 @@ function processData() {
             var currentTime = parseInt(event.timestamp);
 
             if ((currentTime - previousTime) >= 60 * 60 * 1000 * 1000) {
-                sb.appendLine(_.repeat('*', 80));
+                //sb.appendLine(_.repeat('*', 80));
+                writeToFile(`./conversation/${id}_${(new Date()).valueOf()}.txt`, _.cloneDeep(sb));
+                sb = new StringBuilder({ newline: '\r\n' });
             }
 
             previousTime = currentTime;
@@ -118,7 +120,7 @@ function processData() {
 
         // Add events
         Conversations[id] = events;
-        //console.log(`Processed conversation ${participants_string}`);
+        console.log(`Processed conversation ${participants_string}`);
     }
 
     return Conversations;
@@ -129,7 +131,7 @@ function writeToFile(path, stringBuiderData) {
 
     stringBuiderData.pipe(stream);
     stringBuiderData.flush();
-    stream.end();
+    //stream.end();
 }
 
 function formatTimestamp(timestamp) {
