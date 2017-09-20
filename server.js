@@ -2,10 +2,28 @@
 
 var _ = require('lodash');
 var fs = require('graceful-fs');
+var path = require('path');
 var twemoji = require('twemoji');
-var StringBuilder = require('stringbuilder')
+var StringBuilder = require('stringbuilder');
 
 var data = require('./Hangouts/Hangouts.json');
+
+const categories = {
+    password: { name: 'password', tags: ['login', 'signin'] },
+    software: { name: 'software', tags: ['install', ''] },
+    vpn: { name: 'vpn', tags: ['cisco', 'anyconnect'] },
+    vm: { name: 'vm', tags: ['vcenter', 'virtual machine'] },
+    network: { name: 'network', tags: ['internet', 'access'] },
+    VLAN: { name: 'VLAN', tags: ['Project LAN'] },
+    deiver: { name: 'deiver' },
+    mcafee: { name: 'mcafee' },
+    phone: { name: 'phone' },
+    machine_slow: { name: 'machine slow', tags: ['slowness', 'hang'] },
+    printer: { name: 'printer' },
+    hardware: { name: 'hardware' },
+    website: { name: 'website' },
+    os: { name: 'os', tags: ['operating system', 'linux', 'windows'] },
+}
 
 console.log("Processing started");
 fs.writeFile("./output/pocessed_output.json", JSON.stringify(processData()), function(err) {
@@ -102,36 +120,79 @@ function processData() {
         });
 
         var sb = new StringBuilder({ newline: '\r\n' });
-        var previousTime = 0; //events[0].timestamp;
-        _.forEach(events, (event) => {
-            var currentTime = parseInt(event.timestamp);
 
-            if ((currentTime - previousTime) >= 60 * 60 * 1000 * 1000) {
-                //sb.appendLine(_.repeat('*', 80));
-                writeToFile(`./conversation/${id}_${(new Date()).valueOf()}.txt`, _.cloneDeep(sb));
-                sb = new StringBuilder({ newline: '\r\n' });
-            }
+        if (events.length) {
+            var previousTime = _.head(events).timestamp; //events[0].timestamp;
+            _.forEach(events, (event) => {
+                var currentTime = parseInt(event.timestamp);
 
-            previousTime = currentTime;
-            sb.appendLine(`${event.sender}(${event.timestamp} # ${event.msgtime}): ${event.message}`);
-        });
+                if ((currentTime - previousTime) >= 60 * 60 * 1000 * 1000) {
+                    //sb.appendLine(_.repeat('*', 80));                    
+                    writeToFile(`./conversation/${participants_string}_${(new Date()).valueOf()}.txt`, _.cloneDeep(sb));
+                    sb = new StringBuilder({ newline: '\r\n' });
+                }
 
-        writeToFile(`./conversation/${id}_${(new Date()).valueOf()}.txt`, sb);
+                previousTime = currentTime;
+                sb.appendLine(`${event.sender}(${event.timestamp} # ${event.msgtime}): ${event.message}`);
+            });
 
-        // Add events
-        Conversations[id] = events;
-        console.log(`Processed conversation ${participants_string}`);
+            writeToFile(`./conversation/${participants_string}_${(new Date()).valueOf()}.txt`, sb);
+            // Add events
+            Conversations[id] = events;
+        } else {
+            console.log(`Processed conversation ${participants_string}`);
+        }
     }
 
     return Conversations;
 }
 
-function writeToFile(path, stringBuiderData) {
-    var stream = fs.createWriteStream(path, 'utf-8');
+function ensureDirectoryExistence(filePath) {
+    var dirname = path.dirname(filePath);
+    if (fs.existsSync(dirname)) {
+        return true;
+    }
+    ensureDirectoryExistence(dirname);
+    fs.mkdirSync(dirname);
+}
 
-    stringBuiderData.pipe(stream);
-    stringBuiderData.flush();
-    //stream.end();
+function writeToFile(filePath, stringBuiderData) {
+    ensureDirectoryExistence(filePath);
+    stringBuiderData.toString((err, str) => {
+        if (!str.length) {
+            console.log(filePath);
+            return;
+        }
+        if (_.toLower(str).indexOf('ajaykumar.singh@globallogic.com') > 0) {
+            console.log(str);
+        }
+        //var stream = fs.createWriteStream(filePath, 'utf-8');
+
+        //stringBuiderData.pipe(stream);
+        //stringBuiderData.flush();
+        fs.appendFile(filePath, str, (err) => {
+            if (err) {
+                console.log(err)
+            }
+        });
+
+        const category = getCategories(str);
+        const catPath = filePath.replace('conversation', `conversation/${category}`);
+        ensureDirectoryExistence(catPath);
+        fs.appendFile(catPath, str, (err) => {
+            if (err) {
+                console.log(err)
+            }
+        });
+    });
+}
+
+function getCategories(str) {
+    return (_.find(categories, (value) => {
+        return _.find(_.concat((value.tags || []), [value.name]), (val) => {
+            return _.toLower(str).indexOf(_.toLower(val)) > 0
+        })
+    }) || { name: 'others' }).name;
 }
 
 function formatTimestamp(timestamp) {

@@ -32,6 +32,9 @@
 npm-debug.log
 testem.log
 /typings
+/conversation/*
+/hangouts/*
+
 
 # e2e
 /e2e/*.js
