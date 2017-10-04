@@ -123,7 +123,7 @@ function processData() {
 
         if (events.length) {
             var previousTime = _.head(events).timestamp; //events[0].timestamp;
-            _.forEach(events, (event) => {
+            _.forEach(events, function (event) {
                 var currentTime = parseInt(event.timestamp);
 
                 if ((currentTime - previousTime) >= 60 * 60 * 1000 * 1000) {
@@ -158,7 +158,7 @@ function ensureDirectoryExistence(filePath) {
 
 function writeToFile(filePath, stringBuiderData) {
     ensureDirectoryExistence(filePath);
-    stringBuiderData.toString((err, str) => {
+    stringBuiderData.toString(function (err, str) {
         if (!str.length) {
             console.log(filePath);
             return;
@@ -170,7 +170,7 @@ function writeToFile(filePath, stringBuiderData) {
 
         //stringBuiderData.pipe(stream);
         //stringBuiderData.flush();
-        fs.appendFile(filePath, str, (err) => {
+        fs.appendFile(filePath, str, function (err) {
             if (err) {
                 console.log(err)
             }
@@ -179,7 +179,7 @@ function writeToFile(filePath, stringBuiderData) {
         var category = getCategories(str);
         var catPath = filePath.replace('conversation', `conversation/${category}`);
         ensureDirectoryExistence(catPath);
-        fs.appendFile(catPath, str, (err) => {
+        fs.appendFile(catPath, str, function (err) {
             if (err) {
                 console.log(err)
             }
@@ -188,8 +188,8 @@ function writeToFile(filePath, stringBuiderData) {
 }
 
 function getCategories(str) {
-    return (_.find(categories, (value) => {
-        return _.find(_.concat((value.tags || []), [value.name]), (val) => {
+    return (_.find(categories, function (value) {
+        return _.find(_.concat((value.tags || []), [value.name]), function (val) {
             return _.toLower(str).indexOf(_.toLower(val)) > 0
         })
     }) || { name: 'others' }).name;

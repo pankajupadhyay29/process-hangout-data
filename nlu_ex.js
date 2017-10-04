@@ -23,7 +23,7 @@ var allCommunication = [];
 function processFile(filename, content, index, total) {
   var conversation = _.split(content, NEW_LINE);
   var story = [`## story_${intent}_${index}`]
-  _.forEach(conversation, (value) => {
+  _.forEach(conversation, function(value) {
     var text = value.substring(value.indexOf('):') + 2);
     if(
       _.includes(_.lowerCase(value), 'ithelpdesk') 
