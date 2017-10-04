@@ -8,7 +8,7 @@ var StringBuilder = require('stringbuilder');
 
 var data = require('./Hangouts/Hangouts.json');
 
-const categories = {
+var categories = {
     password: { name: 'password', tags: ['login', 'signin'] },
     software: { name: 'software', tags: ['install', ''] },
     vpn: { name: 'vpn', tags: ['cisco', 'anyconnect'] },
@@ -35,13 +35,13 @@ fs.writeFile("./output/pocessed_output.json", JSON.stringify(processData()), fun
 });
 
 function getAllParticipants() {
-    const all_participants = {}
+    var all_participants = {}
     for (var key in data['conversation_state']) {
-        const conversation = data['conversation_state'][key]['conversation_state']['conversation'];
+        var conversation = data['conversation_state'][key]['conversation_state']['conversation'];
         // Get all participants
         for (var person_key in conversation['participant_data']) {
-            const person = conversation['participant_data'][person_key];
-            const gaia_id = person['id']['gaia_id'];
+            var person = conversation['participant_data'][person_key];
+            var gaia_id = person['id']['gaia_id'];
             if (!person['fallback_name'] || person['fallback_name'] == null) {
                 continue;
             }
@@ -54,7 +54,7 @@ function getAllParticipants() {
 }
 
 function processData() {
-    const all_participants = getAllParticipants();
+    var all_participants = getAllParticipants();
 
     var Conversations = {}
 
@@ -176,8 +176,8 @@ function writeToFile(filePath, stringBuiderData) {
             }
         });
 
-        const category = getCategories(str);
-        const catPath = filePath.replace('conversation', `conversation/${category}`);
+        var category = getCategories(str);
+        var catPath = filePath.replace('conversation', `conversation/${category}`);
         ensureDirectoryExistence(catPath);
         fs.appendFile(catPath, str, (err) => {
             if (err) {

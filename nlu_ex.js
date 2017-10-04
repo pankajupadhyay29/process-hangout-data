@@ -1,6 +1,6 @@
 'use strict';
 
-const NEW_LINE = '\r\n';
+var NEW_LINE = '\r\n';
 
 var _ = require('lodash');
 var fs = require('graceful-fs');
@@ -55,7 +55,7 @@ function readFiles(dirname, onFileContent, onError) {
       onError(err);
       return;
     }
-    const totalFiles = filenames.length;
+    var totalFiles = filenames.length;
     filenames.forEach(function(filename, index) {
       fs.readFile(dirname + filename, 'utf-8', function(err, content) {
         if (err) {
